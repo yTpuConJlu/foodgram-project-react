@@ -109,7 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.docx
+Техническое описание дипломного проекта.docx
 
 # Spyder project settings
 .spyderproject
