@@ -58,6 +58,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+Техническое описание дипломного проекта.docx
 db.sqlite3
 db.sqlite3-journal
 
@@ -109,7 +110,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-Техническое описание дипломного проекта.docx
 
 # Spyder project settings
 .spyderproject
