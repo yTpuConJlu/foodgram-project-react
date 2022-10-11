@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'recipes.apps.RecipesConfig',
+    'users.apps.UsersConfig',
     'colorfield',
 ]
 
@@ -129,3 +130,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+URL_PATH_ME = "me"
+
+AUTH_USER_MODEL = 'users.User'
