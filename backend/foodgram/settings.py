@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c014k!^brz&9mz_%n1u(@@o9h6k3t*f$l!tk36u3(2nyi7aseq'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
+    'rest_framework',
+    'djoser',
     'colorfield',
 ]
 
