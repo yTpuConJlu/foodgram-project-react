@@ -1,6 +1,7 @@
-from colorfield.fields import ColorField
 from django.contrib.auth import get_user_model
+from colorfield.fields import ColorField
 from django.db import models
+
 
 User = get_user_model()
 
@@ -53,29 +54,39 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор рецепта')
+        related_name='recipes',
+        verbose_name='Автор рецепта',
+        null=True,
+        )
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=200)
+        max_length=200
+        )
     image = models.ImageField(
         blank=True,
         verbose_name='Фото рецепта',
-        upload_to='recipes/images')
+        upload_to='recipes/images'
+        )
     text = models.TextField(
-        verbose_name='Описание рецепта')
+        verbose_name='Описание рецепта'
+        )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
         related_name='recipes',
-        verbose_name='Ингредиенты рецепта')
+        verbose_name='Ингредиенты рецепта'
+        )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Тег')
+        verbose_name='Тег'
+        )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления, мин.')
+        verbose_name='Время приготовления, мин.'
+        )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации рецепта',
-        auto_now_add=True)
+        auto_now_add=True
+        )
 
     class Meta:
         ordering = ('-pub_date',)
@@ -83,7 +94,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return self.name
+        return f'self.name ({self.author})'
 
 
 class IngredientRecipe(models.Model):
@@ -100,17 +111,19 @@ class IngredientRecipe(models.Model):
         verbose_name='Рецепт')
     amount = models.IntegerField(
         default=1,
-        verbose_name='Количество ингредиента')
+        verbose_name='Количество ингредиента'
+        )
 
     class Meta:
-        default_related_name = 'ingridients_recipe'
+        default_related_name = 'ingredients_recipe'
         constraints = (
             models.UniqueConstraint(
                 fields=('recipe', 'ingredient',),
                 name='recipe_ingredient_exists'),
             models.CheckConstraint(
                 check=models.Q(amount__gte=1),
-                name='amount_gte_1'),)
+                name='amount_gte_1'),
+                )
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
@@ -125,7 +138,8 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         related_name='favorite',
-        on_delete=models.CASCADE,)
+        on_delete=models.CASCADE,
+        )
 
     class Meta:
         ordering = ('user',)
@@ -135,16 +149,19 @@ class Favorite(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
-                name='unique_favorites',),)
+                name='unique_favorites',),
+                )
 
 
 class ShpngCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE,)
+        on_delete=models.CASCADE,
+        )
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,)
+        on_delete=models.CASCADE,
+        )
 
     class Meta:
         verbose_name = 'Рецепт в корзине'
@@ -152,4 +169,5 @@ class ShpngCart(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
-                name='unique_cart',),)
+                name='unique_cart',),
+                )

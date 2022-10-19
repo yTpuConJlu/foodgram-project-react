@@ -1,23 +1,31 @@
 from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, Q
 from foodgram.settings import URL_PATH_ME
 
 
 class User(AbstractUser):
+    """Модель пользователей."""
+
+    """Предопределение ролей пользователей"""
     ADMIN = 'admin'
     USER = 'user'
     ROLES = (
         (ADMIN, ADMIN),
-        (USER, USER),)
+        (USER, USER),
+        )
+    """Поля модели User"""
     email = models.EmailField(
+        max_length=150,
         verbose_name='Адрес электронной почты',
-        unique=True,)
+        unique=True,
+        )
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        null=True,
-        unique=True)
+        unique=True
+        )
     first_name = models.TextField(max_length=150)
     last_name = models.TextField(max_length=150)
     role = models.CharField(
@@ -26,9 +34,9 @@ class User(AbstractUser):
         choices=ROLES,
         default=USER)
 
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN
+    # @property
+    # def is_admin(self):
+    #     return self.role == self.ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
