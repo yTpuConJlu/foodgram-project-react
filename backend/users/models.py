@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-# from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, Q
 from foodgram.settings import URL_PATH_ME
@@ -33,10 +32,6 @@ class User(AbstractUser):
         max_length=50,
         choices=ROLES,
         default=USER)
-
-    # @property
-    # def is_admin(self):
-    #     return self.role == self.ADMIN
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

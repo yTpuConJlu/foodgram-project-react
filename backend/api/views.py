@@ -1,33 +1,36 @@
-from django.http import HttpResponse
 from django.contrib.auth import get_user_model
+from django.db.models import F, Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from django.db.models import F, Sum
-from recipes.models import ShpngCart
 from rest_framework import status
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
 
-from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, Tag
-from users.models import Follow
 from .filters import RecipeFilters
 from .pagination import CustomPagination
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           FollowSerializer,
                           FollowListSerializer,
-                          SpngCartSerializer,
                           RecipeSerializer,
-                          TagSerializer,
-                          UserSerializer,
-                          FollowCreateSerializer
+                          SpngCartSerializer,
+                          TagSerializer
                           )
+from recipes.models import (Favorite,
+                            Ingredient,
+                            IngredientRecipe,
+                            Recipe,
+                            ShpngCart,
+                            Tag
+                            )
+
+from users.models import Follow
 
 User = get_user_model()
 
