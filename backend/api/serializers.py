@@ -14,7 +14,7 @@ from recipes.models import (Favorite, Ingredient, IngredientRecipe,
                             Recipe, ShpngCart, Tag)
 
 from users.models import Follow, User
-       
+
 
 class FavoriteSerializer(ModelSerializer):
     class Meta:

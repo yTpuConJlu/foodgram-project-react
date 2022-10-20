@@ -7,11 +7,18 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from django.db.models import F, Sum
 from recipes.models import ShpngCart
-from .pagination import CustomPagination
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+
+from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, Tag
+from users.models import Follow
+from .filters import RecipeFilters
+from .pagination import CustomPagination
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           FollowSerializer,
                           FollowListSerializer,
@@ -21,28 +28,25 @@ from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           UserSerializer,
                           FollowCreateSerializer
                           )
-from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-from rest_framework import status
-from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, Tag
-from users.models import Follow
-from .filters import RecipeFilters
-
 
 User = get_user_model()
 
 
 class UsersViewSet(UserViewSet):
+    pagination_class = CustomPagination
     queryset = User.objects.all()
 
-    @action(['get'], detail=False, permission_classes=[IsAuthenticated])
+    @action(['get'],
+            detail=False,
+            permission_classes=(IsAuthenticated,)
+            )
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated],
+            permission_classes=(IsAuthenticated,)
             )
     def subscribe(self, request, id):
         author_id = get_object_or_404(User, id=id).id
@@ -67,9 +71,11 @@ class UsersViewSet(UserViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,
-            methods=['GET']
+            methods=['GET'],
+            permission_classes=(IsAuthenticated,)
             )
     def subscriptions(self, request):
+
         users_subscriptions = User.objects.filter(following__user=request.user)
         serializer = FollowListSerializer(
             users_subscriptions,
@@ -82,10 +88,11 @@ class UsersViewSet(UserViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
+    filter_backends = DjangoFilterBackend
+    filter_class = RecipeFilters
+    pagination_class = CustomPagination
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    filter_class = RecipeFilters
-    filter_backends = [DjangoFilterBackend, ]
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -121,7 +128,7 @@ class RecipeViewSet(ModelViewSet):
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated]
+        permission_classes=(IsAuthenticated,)
         )
     def shopping_cart(self, request, pk):
         return self.fav_shpng_methods(request, pk, ShpngCart, {
@@ -132,7 +139,7 @@ class RecipeViewSet(ModelViewSet):
     @action(
         methods=['GET'],
         detail=False,
-        permission_classes=[IsAuthenticated]
+        permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
         shpng_list = IngredientRecipe.objects.filter(
@@ -172,7 +179,7 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated]
+            permission_classes=(IsAuthenticated,)
             )
     def favorite(self, request, pk):
         return self.fav_shpng_methods(request, pk, Favorite, {
@@ -182,14 +189,16 @@ class RecipeViewSet(ModelViewSet):
 
 
 class TagViewSet(ModelViewSet):
+    pagination_class = CustomPagination
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(ModelViewSet):
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
     filter_backends = (SearchFilter,
                        OrderingFilter)
-    search_fields = ('^name',)
     ordering = ('name',)
+    pagination_class = CustomPagination
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    search_fields = ('^name',)
