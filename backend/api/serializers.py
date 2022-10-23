@@ -188,35 +188,35 @@ class FollowListSerializer(ModelSerializer):
         ).exists()
 
 
-# class FollowCreateSerializer(ModelSerializer):
-#     user = SlugRelatedField(
-#         slug_field='id',
-#         queryset=User.objects.all(),
-#         default=CurrentUserDefault(),
-#         ),
-#     author = SlugRelatedField(
-#         slug_field='id',
-#         queryset=User.objects.all())
+class FollowCreateSerializer(ModelSerializer):
+    user = SlugRelatedField(
+        slug_field='id',
+        queryset=User.objects.all(),
+        default=CurrentUserDefault(),
+        ),
+    author = SlugRelatedField(
+        slug_field='id',
+        queryset=User.objects.all())
 
-#     def validate(self, data):
-#         user = data['user']
-#         author = data['author']
-#         if self.context['request'].method == 'POST' and user == author:
-#             raise ValidationError(
-#                 'Нельзя подписаться на самого себя'
-#             )
-#         return data
+    def validate(self, data):
+        user = data['user']
+        author = data['author']
+        if self.context['request'].method == 'POST' and user == author:
+            raise ValidationError(
+                'Нельзя подписаться на самого себя'
+            )
+        return data
 
-    # class Meta:
-    #     model = Follow
-    #     fields = ('user', 'author')
-    #     validators = [
-    #         UniqueTogetherValidator(
-    #             queryset=Follow.objects.all(),
-    #             fields=('user', 'author'),
-    #             message='Вы уже подписаны на данного автора'
-    #         )
-    #     ]
+    class Meta:
+        model = Follow
+        fields = ('user', 'author')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author'),
+                message='Вы уже подписаны на данного автора'
+            )
+        ]
 
 
 class FollowSerializer(ModelSerializer):
@@ -266,8 +266,8 @@ class CreateRecipeSerializer(ModelSerializer):
                 ingredient=ingredient['ingredient'],
             ) for ingredient in ingredients])
 
-    def validate_ingredients(self, value):
-        ingredients = self.initial_data.get('ingredients')
+    def validate(self, data):
+        ingredients = self.data.get('ingredients')
         ingredients_list = []
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
@@ -276,14 +276,11 @@ class CreateRecipeSerializer(ModelSerializer):
                     'Ингредиенты не должны повторятся.'
                 )
             ingredients_list.append(ingredient_id)
-        return value
-
-    def validate_cooking_time(self, value):
-        if value['cooking_time'] <= 0:
+        if data['cooking_time'] <= 0:
             raise ValidationError(
                 'Время приготовления должно быть больше 0.'
             )
-        return value
+        return data
 
     @atomic
     def create(self, validated_data):
@@ -301,9 +298,12 @@ class CreateRecipeSerializer(ModelSerializer):
     @atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients')
+        instance.tags.clear()
+        tags_data = validated_data.pop('tags')
         recipe = instance
         IngredientRecipe.objects.filter(recipe=recipe).delete()
         self.create_ingredients(recipe, ingredients)
+        self.create_tags(tags_data, instance)
         return super().update(recipe, validated_data)
 
     def to_representation(self, instance):
@@ -312,7 +312,7 @@ class CreateRecipeSerializer(ModelSerializer):
             context={'request': self.context.get('request'), }).data
 
 
-class SpngCartSerializer(ModelSerializer):
+class ShoppingCartSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = (

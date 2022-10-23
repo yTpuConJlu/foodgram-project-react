@@ -19,7 +19,7 @@ from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           FollowSerializer,
                           FollowListSerializer,
                           RecipeSerializer,
-                          SpngCartSerializer,
+                          ShoppingCartSerializer,
                           TagSerializer
                           )
 from recipes.models import (Favorite,
@@ -112,7 +112,7 @@ class RecipeViewSet(ModelViewSet):
                 )
             recipe = get_object_or_404(Recipe, id=pk)
             model.objects.create(user=request.user, recipe=recipe)
-            serializer = SpngCartSerializer(
+            serializer = ShoppingCartSerializer(
                 recipe, context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
