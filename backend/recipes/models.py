@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from colorfield.fields import ColorField
 from django.db import models
@@ -81,7 +82,8 @@ class Recipe(models.Model):
         verbose_name='Тег'
         )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления, мин.'
+        verbose_name='Время приготовления, мин.',
+        validators=[MinValueValidator(1)]
         )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации рецепта',
@@ -153,7 +155,7 @@ class Favorite(models.Model):
                 )
 
 
-class ShpngCart(models.Model):
+class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,

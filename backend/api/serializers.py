@@ -1,3 +1,5 @@
+from operator import contains
+from django.core.validators import RegexValidator
 from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -11,7 +13,7 @@ from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         ValidationError)
 from rest_framework.validators import UniqueTogetherValidator
 from recipes.models import (Favorite, Ingredient, IngredientRecipe,
-                            Recipe, ShpngCart, Tag)
+                            Recipe, ShoppingCart, Tag)
 
 from users.models import Follow, User
 
@@ -115,7 +117,7 @@ class RecipeSerializer(ModelSerializer):
         request = self.context.get('request')
         if request.user.is_anonymous:
             return False
-        return ShpngCart.objects.filter(
+        return ShoppingCart.objects.filter(
             user=request.user, recipe__id=obj.id).exists()
 
 
@@ -142,6 +144,12 @@ class CreateIngredientRecipeSerializer(ModelSerializer):
         return IngredientRecipe.objects.create(
             ingredient=validated_data.get('id'),
             amount=validated_data.get('amount'))
+
+
+class RecipeShortInfo(ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FollowListSerializer(ModelSerializer):
@@ -180,35 +188,35 @@ class FollowListSerializer(ModelSerializer):
         ).exists()
 
 
-class FollowCreateSerializer(ModelSerializer):
-    user = SlugRelatedField(
-        slug_field='id',
-        queryset=User.objects.all(),
-        default=CurrentUserDefault(),
-        ),
-    author = SlugRelatedField(
-        slug_field='id',
-        queryset=User.objects.all())
+# class FollowCreateSerializer(ModelSerializer):
+#     user = SlugRelatedField(
+#         slug_field='id',
+#         queryset=User.objects.all(),
+#         default=CurrentUserDefault(),
+#         ),
+#     author = SlugRelatedField(
+#         slug_field='id',
+#         queryset=User.objects.all())
 
-    def validate(self, data):
-        user = data['user']
-        author = data['author']
-        if self.context['request'].method == 'POST' and user == author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя'
-            )
-        return data
+#     def validate(self, data):
+#         user = data['user']
+#         author = data['author']
+#         if self.context['request'].method == 'POST' and user == author:
+#             raise ValidationError(
+#                 'Нельзя подписаться на самого себя'
+#             )
+#         return data
 
-    class Meta:
-        model = Follow
-        fields = ('user', 'author')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'author'),
-                message='Вы уже подписаны на данного автора'
-            )
-        ]
+    # class Meta:
+    #     model = Follow
+    #     fields = ('user', 'author')
+    #     validators = [
+    #         UniqueTogetherValidator(
+    #             queryset=Follow.objects.all(),
+    #             fields=('user', 'author'),
+    #             message='Вы уже подписаны на данного автора'
+    #         )
+    #     ]
 
 
 class FollowSerializer(ModelSerializer):
@@ -258,7 +266,7 @@ class CreateRecipeSerializer(ModelSerializer):
                 ingredient=ingredient['ingredient'],
             ) for ingredient in ingredients])
 
-    def validate(self, data):
+    def validate_ingredients(self, value):
         ingredients = self.initial_data.get('ingredients')
         ingredients_list = []
         for ingredient in ingredients:
@@ -268,11 +276,14 @@ class CreateRecipeSerializer(ModelSerializer):
                     'Ингредиенты не должны повторятся.'
                 )
             ingredients_list.append(ingredient_id)
-        if data['cooking_time'] <= 0:
+        return value
+
+    def validate_cooking_time(self, value):
+        if value['cooking_time'] <= 0:
             raise ValidationError(
                 'Время приготовления должно быть больше 0.'
             )
-        return data
+        return value
 
     @atomic
     def create(self, validated_data):
@@ -299,12 +310,6 @@ class CreateRecipeSerializer(ModelSerializer):
         return RecipeSerializer(
             instance,
             context={'request': self.context.get('request'), }).data
-
-
-class RecipeShortInfo(ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SpngCartSerializer(ModelSerializer):

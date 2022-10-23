@@ -26,7 +26,7 @@ from recipes.models import (Favorite,
                             Ingredient,
                             IngredientRecipe,
                             Recipe,
-                            ShpngCart,
+                            ShoppingCart,
                             Tag
                             )
 
@@ -134,7 +134,7 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
         )
     def shopping_cart(self, request, pk):
-        return self.fav_shpng_methods(request, pk, ShpngCart, {
+        return self.fav_shpng_methods(request, pk, ShoppingCart, {
             'recipe_alrdy_in': 'Рецепт уже добавлен.',
             'recipe_not_in_yet': 'Рецепта в списке покупок нет.'
         })
