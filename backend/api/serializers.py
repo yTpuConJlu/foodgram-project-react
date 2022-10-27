@@ -179,38 +179,6 @@ class FollowListSerializer(ModelSerializer):
             author=author
         ).exists()
 
-
-# class FollowCreateSerializer(ModelSerializer):
-#     user = SlugRelatedField(
-#         slug_field='id',
-#         queryset=User.objects.all(),
-#         default=CurrentUserDefault(),
-#         ),
-#     author = SlugRelatedField(
-#         slug_field='id',
-#         queryset=User.objects.all())
-
-#     def validate(self, data):
-#         user = data['user']
-#         author = data['author']
-#         if self.context['request'].method == 'POST' and user == author:
-#             raise ValidationError(
-#                 'Нельзя подписаться на самого себя'
-#             )
-#         return data
-
-#     class Meta:
-#         model = Follow
-#         fields = ('user', 'author')
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=Follow.objects.all(),
-#                 fields=('user', 'author'),
-#                 message='Вы уже подписаны на данного автора'
-        #     )
-        # ]
-
-
 class FollowSerializer(ModelSerializer):
     class Meta:
         model = Follow
