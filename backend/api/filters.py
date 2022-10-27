@@ -1,13 +1,19 @@
-from django_filters import rest_framework as django_filter
+from django_filters.rest_framework import FilterSet
+from django.contrib.auth import get_user_model
+from django_filters.rest_framework.filters import (AllValuesMultipleFilter,
+                                                   BooleanFilter,
+                                                   ModelChoiceFilter)
 from recipes.models import Recipe
-from users.models import User
+# from users.models import User
+
+User = get_user_model()
 
 
-class RecipeFilters(django_filter.FilterSet):
-    author = django_filter.ModelChoiceFilter(queryset=User.objects.all())
-    tags = django_filter.AllValuesMultipleFilter(field_name='tags__slug')
-    is_favorited = django_filter.BooleanFilter(method='get_is_favorited')
-    is_in_shopping_cart = django_filter.BooleanFilter(
+class RecipeFilters(FilterSet):
+    author = ModelChoiceFilter(queryset=User.objects.all())
+    tags = AllValuesMultipleFilter(field_name='tags__slug')
+    is_favorited = BooleanFilter(method='get_is_favorited')
+    is_in_shopping_cart = BooleanFilter(
         method='get_is_in_shopping_cart')
 
     class Meta:

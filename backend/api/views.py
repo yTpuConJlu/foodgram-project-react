@@ -1,3 +1,4 @@
+from msilib.schema import ServiceInstall
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse
@@ -5,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import status
 from rest_framework.decorators import action
@@ -15,7 +18,9 @@ from rest_framework.viewsets import ModelViewSet
 
 from .filters import RecipeFilters
 from .pagination import CustomPagination
-from .serializers import (CreateRecipeSerializer, IngredientSerializer,
+from .serializers import (CreateRecipeSerializer,
+                          IngredientSerializer,
+                          FavoriteSerializer,
                           FollowSerializer,
                           FollowListSerializer,
                           RecipeSerializer,
@@ -52,16 +57,15 @@ class UsersViewSet(UserViewSet):
             permission_classes=(IsAuthenticated,)
             )
     def subscribe(self, request, id):
-        author_id = get_object_or_404(User, id=id).id
+        author_id = get_object_or_404(User, id=id).id  # type: ignore
         user_id = request.user.id
         if request.method == 'POST':
             serializer = FollowSerializer(
                 data={
-                    'user': user_id,
-                    'author': author_id
-                },
-                context={'request': request}
-            )
+                 'user': user_id,
+                 'author': author_id
+                },  # type: ignore
+                context={'request': request},)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -94,6 +98,7 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = DjangoFilterBackend
     filter_class = RecipeFilters
     pagination_class = CustomPagination
+    filter_backends = (DjangoFilterBackend,)
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
 
@@ -103,28 +108,30 @@ class RecipeViewSet(ModelViewSet):
         return CreateRecipeSerializer
 
     @staticmethod
-    def fav_shpng_methods(request, pk, model, errors):
+    def fav_shpng_methods(request, pk, model, in_serializer, errors):
         if request.method == 'POST':
-            if model.objects.filter(user=request.user, recipe__id=pk).exists():
-                return Response(
-                    {'errors': errors['recipe_alrdy_in']},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            recipe = get_object_or_404(Recipe, id=pk)
-            model.objects.create(user=request.user, recipe=recipe)
-            serializer = ShoppingCartSerializer(
-                recipe, context={'request': request}
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            recipe = get_object_or_404(Recipe, pk=pk).pk
+            user = request.user.pk
+            serializer = in_serializer(
+                data={
+                 'recipe': recipe,
+                 'user': user
+                },
+                context={'request': request,
+                         'errors': errors})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
         recipe = model.objects.filter(user=request.user, recipe__id=pk)
         if recipe.exists():
             recipe.delete()
             return Response(
-                {'msg': 'Успешно удалено'},
+                {'errors': errors['recipe_deleted']},
                 status=status.HTTP_204_NO_CONTENT
             )
         return Response(
-            {'error': errors['recipe_not_in_yet']},
+            {'errors': errors['recipe_not_in_yet']},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -134,10 +141,14 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
         )
     def shopping_cart(self, request, pk):
-        return self.fav_shpng_methods(request, pk, ShoppingCart, {
-            'recipe_alrdy_in': 'Рецепт уже добавлен.',
-            'recipe_not_in_yet': 'Рецепта в списке покупок нет.'
-        })
+        return self.fav_shpng_methods(
+            request, pk, ShoppingCart,
+            ShoppingCartSerializer,
+            {
+             'recipe_alrdy_in': 'Рецепт уже добавлен в избранное.',
+             'recipe_not_in_yet': 'Рецепта в списке покупок нет.',
+             'recipe_deleted': 'Успешно удалено из списка покупок'
+            })
 
     @action(
         methods=['GET'],
@@ -145,8 +156,8 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
-        shpng_list = IngredientRecipe.objects.filter(
-                recipe__shpngcart__user=request.user
+        shopping_list = IngredientRecipe.objects.filter(
+                recipe__shoppingcart__user=request.user
             ).values(
                 name=F('ingredient__name'),
                 measurement_unit=F('ingredient__measurement_unit')
@@ -164,18 +175,18 @@ class RecipeViewSet(ModelViewSet):
         p = canvas.Canvas(response, pagesize=A4)
         left_position = 50
         top_position = 700
-        p.drawString(left_position, top_position + 40, "Список покупок:")
-
-        for number, item in enumerate(shpng_list, start=1):
+        pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+        p.setFont('Arial', 25)
+        p.drawString(left_position, top_position + 40, 'Список покупок:')
+        for number, item in enumerate(shopping_list, start=1):
             p.drawString(
                 left_position,
                 top_position,
-                f'{number}.  {item["ingredient__name"]} - '
-                f'{item["ingredient_total"]}'
-                f'{item["ingredient__measurement_unit"]}'
+                f'{number}.  {item[0]} - '
+                f'{item[1]}'
+                f'{item[2]}'
             )
             top_position = top_position - 40
-
         p.showPage()
         p.save()
         return response
@@ -185,10 +196,15 @@ class RecipeViewSet(ModelViewSet):
             permission_classes=(IsAuthenticated,)
             )
     def favorite(self, request, pk):
-        return self.fav_shpng_methods(request, pk, Favorite, {
-            'recipe_alrdy_in': 'Рецепт уже добавлен в избранное',
-            'recipe_not_in_yet': 'Рецепта еще нет в избранном'
-        })
+        return self.fav_shpng_methods(
+            request, pk,
+            Favorite,
+            FavoriteSerializer,
+            {
+             'recipe_alrdy_in': 'Рецепт уже добавлен в избранное.',
+             'recipe_not_in_yet': 'Рецепт еще не добавлен в избранное.',
+             'recipe_deleted': 'Успешно удалено из избранного'
+            })
 
 
 class TagViewSet(ModelViewSet):

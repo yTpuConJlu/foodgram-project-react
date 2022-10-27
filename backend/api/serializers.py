@@ -1,17 +1,11 @@
-from operator import contains
-from django.core.validators import RegexValidator
 from django.db.transaction import atomic
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from drf_base64.fields import Base64ImageField
-from rest_framework.fields import CurrentUserDefault
 from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         SerializerMethodField,
                                         SlugRelatedField,
                                         ValidationError)
-from rest_framework.validators import UniqueTogetherValidator
 from recipes.models import (Favorite, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
 
@@ -25,12 +19,18 @@ class FavoriteSerializer(ModelSerializer):
 
     def validate(self, data):
         request = self.context.get('request')
-        if not request or request.user.is_anonimus:
+        if not request or request.user.is_anonymous:
             return False
         recipe = data['recipe']
         if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
-            raise ValidationError({'errors': 'Уже было добавлено.'})
+            raise ValidationError(
+                 {'errors': self.context['errors']['recipe_alrdy_in']})
         return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeShortInfo(instance.recipe, context=context).data
 
 
 class IngredientSerializer(ModelSerializer):
@@ -132,14 +132,6 @@ class CreateIngredientRecipeSerializer(ModelSerializer):
             'id',
             'amount',)
 
-    def validate_amount(self, data):
-        if int(data) < 1:
-            raise ValidationError({
-                'ingredients': (
-                    'Количество не может быть меньше 1'),
-                'msg': data})
-        return data
-
     def create(self, validated_data):
         return IngredientRecipe.objects.create(
             ingredient=validated_data.get('id'),
@@ -188,35 +180,35 @@ class FollowListSerializer(ModelSerializer):
         ).exists()
 
 
-class FollowCreateSerializer(ModelSerializer):
-    user = SlugRelatedField(
-        slug_field='id',
-        queryset=User.objects.all(),
-        default=CurrentUserDefault(),
-        ),
-    author = SlugRelatedField(
-        slug_field='id',
-        queryset=User.objects.all())
+# class FollowCreateSerializer(ModelSerializer):
+#     user = SlugRelatedField(
+#         slug_field='id',
+#         queryset=User.objects.all(),
+#         default=CurrentUserDefault(),
+#         ),
+#     author = SlugRelatedField(
+#         slug_field='id',
+#         queryset=User.objects.all())
 
-    def validate(self, data):
-        user = data['user']
-        author = data['author']
-        if self.context['request'].method == 'POST' and user == author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя'
-            )
-        return data
+#     def validate(self, data):
+#         user = data['user']
+#         author = data['author']
+#         if self.context['request'].method == 'POST' and user == author:
+#             raise ValidationError(
+#                 'Нельзя подписаться на самого себя'
+#             )
+#         return data
 
-    class Meta:
-        model = Follow
-        fields = ('user', 'author')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'author'),
-                message='Вы уже подписаны на данного автора'
-            )
-        ]
+#     class Meta:
+#         model = Follow
+#         fields = ('user', 'author')
+#         validators = [
+#             UniqueTogetherValidator(
+#                 queryset=Follow.objects.all(),
+#                 fields=('user', 'author'),
+#                 message='Вы уже подписаны на данного автора'
+        #     )
+        # ]
 
 
 class FollowSerializer(ModelSerializer):
@@ -266,20 +258,44 @@ class CreateRecipeSerializer(ModelSerializer):
                 ingredient=ingredient['ingredient'],
             ) for ingredient in ingredients])
 
-    def validate(self, data):
-        ingredients = self.data.get('ingredients')
-        ingredients_list = []
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id']
-            if ingredient_id in ingredients_list:
-                raise ValidationError(
-                    'Ингредиенты не должны повторятся.'
-                )
-            ingredients_list.append(ingredient_id)
-        if data['cooking_time'] <= 0:
+    def create_tags(self, tags, recipe):
+        for tag in tags:
+            recipe.tags.add(tag)
+
+    @staticmethod
+    def check_repit(data, errors):
+        if not data:
             raise ValidationError(
-                'Время приготовления должно быть больше 0.'
-            )
+                    {'errors': errors['is_empty']})
+        check_list = []
+        for item_to_chk in data:
+            if item_to_chk in check_list:
+                raise ValidationError(
+                    {'errors': errors['is_repeat']})
+            check_list.append(item_to_chk)
+        return data
+
+    def validate_ingredients(self, data):
+        self.check_repit(
+            data,
+            {'is_repeat': 'Ингредиенты не должны повторяться в рецепте.',
+             'is_empty': 'Должен быть хотя бы 1 ингредиент.'})
+        return data
+
+    def validate_tags(self, data):
+        self.check_repit(
+            data,
+            {'is_repeat': 'Тэги не должны повторяться в рецепте.',
+             'is_empty': 'Теги не должны быть пустыми'})
+        return data
+
+    def validate_cooking_time(self, data):
+        if data < 1:
+            raise ValidationError(
+                'Готовить надо не менее 1 мин.')
+        if data > 500:
+            raise ValidationError(
+                'Время приготовления не может быть более 500 мин.')
         return data
 
     @atomic
@@ -314,10 +330,23 @@ class CreateRecipeSerializer(ModelSerializer):
 
 class ShoppingCartSerializer(ModelSerializer):
     class Meta:
-        model = Recipe
+        model = ShoppingCart
         fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time'
+            'recipe',
+            'user'
         )
+
+    def validate(self, data):
+        print(self.context['errors'])
+        user = self.context['request'].user
+        recipe_pk = data['recipe'].pk
+        if ShoppingCart.objects.filter(user=user,
+                                       recipe__pk=recipe_pk).exists():
+            raise ValidationError(
+                 {'errors': self.context['errors']['recipe_alrdy_in']})
+        return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeShortInfo(instance.recipe, context=context).data

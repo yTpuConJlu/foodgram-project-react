@@ -34,7 +34,7 @@ class Tag(models.Model):
         db_index=True)
     color = ColorField(
         format='hex',
-        verbose_name='HEX-кодировка цвета')
+        verbose_name='HEX-кодировка цвета')  # type: ignore
     slug = models.SlugField(
         max_length=200,
         verbose_name='Slug',
@@ -83,7 +83,7 @@ class Recipe(models.Model):
         )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления, мин.',
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(1, '1 мин минимум')]
         )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации рецепта',
@@ -159,6 +159,7 @@ class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='shoppingcart'
         )
     user = models.ForeignKey(
         User,
