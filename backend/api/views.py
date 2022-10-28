@@ -1,4 +1,4 @@
-from msilib.schema import ServiceInstall
+# from msilib.schema import ServiceInstall
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse

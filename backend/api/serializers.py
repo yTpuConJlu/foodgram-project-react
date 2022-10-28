@@ -179,6 +179,7 @@ class FollowListSerializer(ModelSerializer):
             author=author
         ).exists()
 
+
 class FollowSerializer(ModelSerializer):
     class Meta:
         model = Follow
@@ -226,10 +227,6 @@ class CreateRecipeSerializer(ModelSerializer):
                 ingredient=ingredient['ingredient'],
             ) for ingredient in ingredients])
 
-    def create_tags(self, tags, recipe):
-        for tag in tags:
-            recipe.tags.add(tag)
-
     @staticmethod
     def check_repit(data, errors):
         if not data:
@@ -244,6 +241,14 @@ class CreateRecipeSerializer(ModelSerializer):
         return data
 
     def validate_ingredients(self, data):
+        for i in data:
+            if i['amount'] <= 0:
+                raise ValidationError(
+                    f"{i['ingredient'].name}"
+                    f" - указано: ({i['amount']})"
+                    f"{i['ingredient'].measurement_unit}."
+                    f" Количество ингредиента должно быть больше 0."
+                    )
         self.check_repit(
             data,
             {'is_repeat': 'Ингредиенты не должны повторяться в рецепте.',
@@ -251,6 +256,7 @@ class CreateRecipeSerializer(ModelSerializer):
         return data
 
     def validate_tags(self, data):
+
         self.check_repit(
             data,
             {'is_repeat': 'Тэги не должны повторяться в рецепте.',
@@ -283,11 +289,11 @@ class CreateRecipeSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients')
         instance.tags.clear()
-        tags_data = validated_data.pop('tags')
+        tags = validated_data.pop('tags')
         recipe = instance
         IngredientRecipe.objects.filter(recipe=recipe).delete()
         self.create_ingredients(recipe, ingredients)
-        self.create_tags(tags_data, instance)
+        recipe.tags.set(tags)
         return super().update(recipe, validated_data)
 
     def to_representation(self, instance):
@@ -305,7 +311,6 @@ class ShoppingCartSerializer(ModelSerializer):
         )
 
     def validate(self, data):
-        print(self.context['errors'])
         user = self.context['request'].user
         recipe_pk = data['recipe'].pk
         if ShoppingCart.objects.filter(user=user,
