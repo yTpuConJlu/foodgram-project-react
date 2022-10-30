@@ -7,6 +7,7 @@ from recipes.models import Ingredient
 
 class Command(BaseCommand):
     """Запуск импорта.
+
     python manage.py importcsv
     """
 

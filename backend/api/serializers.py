@@ -24,7 +24,7 @@ class FavoriteSerializer(ModelSerializer):
         recipe = data['recipe']
         if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
             raise ValidationError(
-                 {'errors': self.context['errors']['recipe_alrdy_in']})
+                {'errors': self.context['errors']['recipe_alrdy_in']})
         return data
 
     def to_representation(self, instance):
@@ -231,7 +231,7 @@ class CreateRecipeSerializer(ModelSerializer):
     def check_repit(data, errors):
         if not data:
             raise ValidationError(
-                    {'errors': errors['is_empty']})
+                {'errors': errors['is_empty']})
         check_list = []
         for item_to_chk in data:
             if item_to_chk in check_list:
@@ -316,7 +316,7 @@ class ShoppingCartSerializer(ModelSerializer):
         if ShoppingCart.objects.filter(user=user,
                                        recipe__pk=recipe_pk).exists():
             raise ValidationError(
-                 {'errors': self.context['errors']['recipe_alrdy_in']})
+                {'errors': self.context['errors']['recipe_alrdy_in']})
         return data
 
     def to_representation(self, instance):

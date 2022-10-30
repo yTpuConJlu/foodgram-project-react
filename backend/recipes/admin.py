@@ -4,14 +4,14 @@ from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 class BaseAdminSettings(admin.ModelAdmin):
     """Базовый класс настройки админ панели."""
+
     empty_value_display = '-пусто-'
     list_filter = ('author', 'name', 'tags')
 
 
 class RecipeAdmin(BaseAdminSettings):
-    """
-    Настройка админ панели управления рецептами.
-    """
+    """Настройка админ панели управления рецептами."""
+
     list_display = (
         'name',
         'author',
@@ -29,9 +29,8 @@ class RecipeAdmin(BaseAdminSettings):
 
 
 class IngredientAdmin(BaseAdminSettings):
-    """
-    Настройка админ панели управления ингредиентами.
-    """
+    """Настройка админ панели управления ингредиентами."""
+
     list_display = (
         'name',
         'measurement_unit')
@@ -41,9 +40,8 @@ class IngredientAdmin(BaseAdminSettings):
 
 
 class TagAdmin(BaseAdminSettings):
-    """
-    Настройка админ панели управления тегами.
-    """
+    """Настройка админ панели управления тегами."""
+
     list_display = (
         'name',
         'color',
@@ -55,18 +53,16 @@ class TagAdmin(BaseAdminSettings):
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    """
-    Настройка админ панели управления избранными рецептами.
-    """
+    """Настройка админ панели управления избранными рецептами."""
+
     list_display = ('user', 'recipe')
     list_filter = ('user', 'recipe')
     search_fields = ('user', 'recipe')
 
 
 class ShpngCartAdmin(admin.ModelAdmin):
-    """
-    Настройка админ панели управления корзиной покупок.
-    """
+    """Настройка админ панели управления корзиной покупок."""
+
     list_display = ('recipe', 'user')
     list_filter = ('recipe', 'user')
     search_fields = ('user',)

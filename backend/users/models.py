@@ -13,18 +13,18 @@ class User(AbstractUser):
     ROLES = (
         (ADMIN, ADMIN),
         (USER, USER),
-        )
+    )
     """Поля модели User"""
     email = models.EmailField(
         max_length=150,
         verbose_name='Адрес электронной почты',
         unique=True,
-        )
+    )
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
         unique=True
-        )
+    )
     first_name = models.TextField(max_length=150)
     last_name = models.TextField(max_length=150)
     role = models.CharField(
@@ -51,9 +51,11 @@ class User(AbstractUser):
 
 class Follow(models.Model):
     """Модель подписок.
+
     user - пользователь который подписывается
     author - автор на которого подписываемся
     """
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

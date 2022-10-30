@@ -1,4 +1,3 @@
-# from msilib.schema import ServiceInstall
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse
@@ -21,8 +20,8 @@ from .pagination import CustomPagination
 from .serializers import (CreateRecipeSerializer,
                           IngredientSerializer,
                           FavoriteSerializer,
-                          FollowSerializer,
                           FollowListSerializer,
+                          FollowSerializer,
                           RecipeSerializer,
                           ShoppingCartSerializer,
                           TagSerializer
@@ -57,14 +56,14 @@ class UsersViewSet(UserViewSet):
             permission_classes=(IsAuthenticated,)
             )
     def subscribe(self, request, id):
-        author_id = get_object_or_404(User, id=id).id  # type: ignore
+        author_id = get_object_or_404(User, id=id).id
         user_id = request.user.id
         if request.method == 'POST':
             serializer = FollowSerializer(
                 data={
-                 'user': user_id,
-                 'author': author_id
-                },  # type: ignore
+                   'user': user_id,
+                   'author': author_id
+                },
                 context={'request': request},)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -157,7 +156,7 @@ class RecipeViewSet(ModelViewSet):
     )
     def download_shopping_cart(self, request):
         shopping_list = IngredientRecipe.objects.filter(
-                recipe__shoppingcart__user=request.user
+            recipe__shoppingcart__user=request.user
             ).values(
                 name=F('ingredient__name'),
                 measurement_unit=F('ingredient__measurement_unit')

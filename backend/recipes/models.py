@@ -25,9 +25,8 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    """
-    Модель тегов.
-    """
+    """Модель тегов."""
+
     name = models.CharField(
         max_length=200,
         verbose_name='Название тега',
@@ -49,9 +48,8 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    """
-    Модель рецептов.
-    """
+    """Модель рецептов."""
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -103,9 +101,8 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    """
-    Модель ингредиентов в рецептах.
-    """
+    """Модель ингредиентов в рецептах."""
+
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -128,7 +125,7 @@ class IngredientRecipe(models.Model):
             models.CheckConstraint(
                 check=models.Q(amount__gte=1),
                 name='amount_gte_1'),
-                )
+            )
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
@@ -155,7 +152,7 @@ class Favorite(models.Model):
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_favorites',),
-                )
+            )
 
 
 class ShoppingCart(models.Model):
@@ -176,4 +173,4 @@ class ShoppingCart(models.Model):
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_cart',),
-                )
+            )
