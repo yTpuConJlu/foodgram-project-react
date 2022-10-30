@@ -17,22 +17,24 @@
 #       - ../docs/:/usr/share/nginx/html/api/docs/
 version: '3.8'
 services:
-  db-foodgram:
+  db:
     image: postgres:13.0-alpine
     restart: always
+    ports:
+      - "5432:5432"
     volumes:
-      - /var/lib/postgresql/data/
+      - db_value:/var/lib/postgresql/data/
     env_file:
       - ./.env
 
-  web-foodgram:
-    image: banderolfromacer/food:latest
+  web:
+    image: banderolfromacer/foodgram:latest
     restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media
     depends_on:
-      - db-foodgram
+      - db
     env_file:
       - ./.env
 
@@ -45,8 +47,9 @@ services:
       - static_value:/var/html/static
       - media_value:/var/html/media/
     depends_on:
-      - web-foodgram  
+      - web
 
 volumes:
   static_value:
   media_value:
+  db_value:
