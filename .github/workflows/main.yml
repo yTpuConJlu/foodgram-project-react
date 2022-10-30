@@ -58,7 +58,9 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
+        context: ./infra/
         script: |
+          sudo pwd
           sudo docker-compose stop
           sudo docker-compose rm web
           touch .env
@@ -68,11 +70,11 @@ jobs:
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} > .env
           echo DB_HOST=${{ secrets.DB_HOST }} > .env
           echo DB_PORT=${{ secrets.DB_PORT }} > .env
-          sudo docker compose up -d
+          sudo docker-compose up -d
           
-          sudo docker compose exec web python manage.py makemigrations
-          sudo docker compose exec web python manage.py migrate
-          sudo docker compose exec web python manage.py collectstatic --noinput
+          sudo docker-compose exec web python manage.py makemigrations
+          sudo docker-compose exec web python manage.py migrate
+          sudo docker-compose exec web python manage.py collectstatic --noinput
 
 
 
