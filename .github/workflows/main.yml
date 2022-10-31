@@ -68,8 +68,6 @@ jobs:
         working-directory: infra
         script: |
           sudo pwd
-          sudo cd infra/
-          sudo pwd
           sudo docker-compose down
           sudo docker pull banderolfromacer/foodgram:latest
           touch .env
