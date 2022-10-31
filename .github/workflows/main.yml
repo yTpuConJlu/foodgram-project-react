@@ -67,7 +67,7 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
         script: |
           sudo pwd
-          sudo cd infra
+          sudo cd infra/
           sudo pwd
           sudo docker-compose down
           sudo docker pull banderolfromacer/foodgram:latest
