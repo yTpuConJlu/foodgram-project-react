@@ -60,12 +60,12 @@ jobs:
     steps:
     - name: executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
-      working-directory: ./infra
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
+        working-directory: ./infra
         script: |
           sudo pwd
           sudo docker-compose down
