@@ -148,7 +148,7 @@ class RecipeViewSet(ModelViewSet):
             request, pk, ShoppingCart,
             ShoppingCartSerializer,
             {
-             'recipe_alrdy_in': 'Рецепт уже добавлен в избранное.',
+             'recipe_alrdy_in': 'Рецепт уже добавлен в список покупок.',
              'recipe_not_in_yet': 'Рецепта в списке покупок нет.',
              'recipe_deleted': 'Успешно удалено из списка покупок'
             })
@@ -178,7 +178,10 @@ class RecipeViewSet(ModelViewSet):
         p = canvas.Canvas(response, pagesize=A4)
         left_position = 50
         top_position = 700
-        font_path = os.path.join(FONTS_ROOT, 'fonts/', 'arial.ttf')
+        font_path = os.path.join(
+            FONTS_ROOT,
+            'fonts/',
+            'Arial.ttf')
         pdfmetrics.registerFont(TTFont('Arial', font_path))
         p.setFont('Arial', 25)
         p.drawString(left_position, top_position + 40, 'Список покупок:')
