@@ -59,6 +59,7 @@ pep8-naming==0.12.1
 Pillow==9.2.0
 platformdirs==2.5.2
 pluggy==0.13.1
+psycopg2==2.9.5
 psycopg2-binary==2.8.6
 py==1.11.0
 pyaes==1.6.1
