@@ -15,7 +15,7 @@ class Command(BaseCommand):
         file = 'ingredients.csv'
         base_parent_dir = os.path.abspath(
             os.path.join(settings.BASE_DIR, os.pardir))
-        with open(f'{base_parent_dir}/data/{file}',
+        with open(f'{base_parent_dir}/foodgram-project-react/data/{file}',
                   'r', encoding='utf-8') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
