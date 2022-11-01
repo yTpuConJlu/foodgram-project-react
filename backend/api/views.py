@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http import HttpResponse
@@ -35,6 +37,8 @@ from recipes.models import (Favorite,
                             )
 
 from users.models import Follow
+
+FONTS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 User = get_user_model()
 
@@ -174,7 +178,8 @@ class RecipeViewSet(ModelViewSet):
         p = canvas.Canvas(response, pagesize=A4)
         left_position = 50
         top_position = 700
-        pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+        font_path = os.path.join(FONTS_ROOT, 'fonts/', 'arial.ttf')
+        pdfmetrics.registerFont(TTFont('Arial', font_path))
         p.setFont('Arial', 25)
         p.drawString(left_position, top_position + 40, 'Список покупок:')
         for number, item in enumerate(shopping_list, start=1):
