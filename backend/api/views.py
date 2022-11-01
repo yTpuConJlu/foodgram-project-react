@@ -181,9 +181,9 @@ class RecipeViewSet(ModelViewSet):
         font_path = os.path.join(
             FONTS_ROOT,
             'fonts/',
-            'Arial.ttf')
-        pdfmetrics.registerFont(TTFont('Arial', font_path))
-        p.setFont('Arial', 25)
+            'arial.ttf')
+        pdfmetrics.registerFont(TTFont('arial', font_path))
+        p.setFont('arial', 25)
         p.drawString(left_position, top_position + 40, 'Список покупок:')
         for number, item in enumerate(shopping_list, start=1):
             p.drawString(
