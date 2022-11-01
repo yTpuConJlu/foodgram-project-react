@@ -46,6 +46,7 @@ jobs:
           with:
             context: backend/
             push: true
+            no-cache: true
             tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
 
         - name: Push frontend to Docker Hub
