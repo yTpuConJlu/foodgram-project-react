@@ -40,4 +40,3 @@ DB_HOST=db # название сервиса (контейнера)
 DB_PORT=5432 # порт для подключения к БД
 
 SECRET_KEY=c014k!^brz&9mz_%n1u(@@o9h6k3t*f$l!tk36u3(2nyi7aseq
-
