@@ -54,11 +54,11 @@ scp -r infra/* di@<you server ip>:/home/< username >/foodgram/<br/>
 запустите установку и сборку контейнеров<br/>
 docker compose up -d<br/>
 
-# Выполните миграции в контейнере созданном их образа foodgram:
+Выполните миграции в контейнере созданном их образа foodgram:
+
 docker-compose exec -T < CONTAINER ID > python manage.py migrate<br/>
 
-
-# Создайте суперпользователя
+Создайте суперпользователя
 
 docker ps<br/>
 
@@ -66,7 +66,7 @@ docker exec -it < CONTAINER ID > bash <br/>
 
 python manage.py createsuperuser<br/>
 
-# Загрузите статические файлы в контейнере созданном из образа foodgram:
+Загрузите статические файлы в контейнере созданном из образа foodgram:
 
 docker-compose exec -T < CONTAINER ID > python manage.py collectstatic --no-input
 
@@ -80,8 +80,8 @@ ytpu-conjlu.servebeer.com 51.250.94.102
 login: banderolfromacer@yandex.ru
 password: Admin
 
-# Автор backend сервисов
+Автор backend сервисов
 [Илья Щербаков](https://github.com/yTpuConJlu)
 
-# Автор frontend сервисов
+Автор frontend сервисов
 [Yandex Praktikum](https://github.com/yandex-praktikum)
