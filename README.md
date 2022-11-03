@@ -19,6 +19,58 @@ Foodgram - «Продуктовый помощник»
 [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat&logo=GitHub%20actions&logoColor=56C0C0&color=008080)](https://github.com/features/actions)
 [![Yandex.Cloud](https://img.shields.io/badge/-Yandex.Cloud-464646?style=flat&logo=Yandex.Cloud&logoColor=56C0C0&color=008080)](https://cloud.yandex.ru/)
 
+# Системные требования
+- выделенный linux Ubuntu сервер
+- внешний IP адрес
+- зарегистрировнное доменное имя
+- nginx 
+- docker
+- docker compose
+
+
+
+Клонируйте репозиторий<br/>
+
+git clone https://github.com/yTpuConJlu/foodgram-project-react.git
+
+Создайте файл .env в директории infra и заполните его данными по этому 
+образцу:
+
+DB_ENGINE=django.db.backends.postgresql<br/>
+DB_NAME=foodgram<br/>
+POSTGRES_USER=foodgram<br/>
+POSTGRES_PASSWORD=foodgram<br/>
+DB_HOST=db # название сервиса (контейнера)<br/>
+DB_PORT=5432<br/>
+SECRET_KEY=c014k!^brz&9mz_%n1u(@@o9h6k3t*f$l!tk36u3(2nyi7aseq
+
+скопируйте папку /infra/<br/>
+scp -r infra/* di@<you server ip>:/home/< username >/foodgram/<br/>
+<br/>
+
+подключитесь к серверу через ssh и перейдите в каталог<br/>
+/home/< username >/foodgram/infra/<br/>
+<br/>
+запустите установку и сборку контейнеров<br/>
+docker compose up -d<br/>
+
+# Выполните миграции в контейнере созданном их образа foodgram:
+docker-compose exec -T < CONTAINER ID > python manage.py migrate<br/>
+
+
+# Создайте суперпользователя
+
+docker ps<br/>
+
+docker exec -it < CONTAINER ID > bash <br/>
+
+python manage.py createsuperuser<br/>
+
+# Загрузите статические файлы в контейнере созданном из образа foodgram:
+
+docker-compose exec -T < CONTAINER ID > python manage.py collectstatic --no-input
+
+
 ## Сайт:
 
 ytpu-conjlu.servebeer.com 51.250.94.102
@@ -28,15 +80,8 @@ ytpu-conjlu.servebeer.com 51.250.94.102
 login: banderolfromacer@yandex.ru
 password: Admin
 
+# Автор backend сервисов
+[Илья Щербаков](https://github.com/yTpuConJlu)
 
-Создайте файл .env в директории infra и заполните его данными по этому 
-образцу:
-
-DB_ENGINE=django.db.backends.postgresql # указываем, что работаем с postgresql
-DB_NAME=foodgram # имя базы данных
-POSTGRES_USER=foodgram
-POSTGRES_PASSWORD=foodgram
-DB_HOST=db # название сервиса (контейнера)
-DB_PORT=5432 # порт для подключения к БД
-
-SECRET_KEY=c014k!^brz&9mz_%n1u(@@o9h6k3t*f$l!tk36u3(2nyi7aseq
+# Автор frontend сервисов
+[Yandex Praktikum](https://github.com/yandex-praktikum)
