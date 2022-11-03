@@ -97,7 +97,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'self.name ({self.author})'
+        return f'{self.name}. Автор: {self.author.username}'
 
 
 class IngredientRecipe(models.Model):
@@ -147,7 +147,7 @@ class Favorite(models.Model):
         ordering = ('user',)
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-        default_related_name = 'favorites'
+        default_related_name = 'favorite'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),

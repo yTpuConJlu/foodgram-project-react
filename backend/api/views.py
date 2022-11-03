@@ -17,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from .filters import RecipeFilters
+from .filters import IngredientFilter, RecipeFilters
 from .pagination import CustomPagination
 from .serializers import (CreateRecipeSerializer,
                           IngredientSerializer,
@@ -86,24 +86,24 @@ class UsersViewSet(UserViewSet):
             )
     def subscriptions(self, request):
 
-        users_subscriptions = User.objects.filter(following__user=request.user)
+        subscriptions_list = self.paginate_queryset(
+            User.objects.filter(following__user=request.user)
+        )
         serializer = FollowListSerializer(
-            users_subscriptions,
-            many=True,
-            context={
-                "request": request
+            subscriptions_list, many=True, context={
+                'request': request
             }
         )
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 
 class RecipeViewSet(ModelViewSet):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
     filter_backends = DjangoFilterBackend
     filter_class = RecipeFilters
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -215,7 +215,6 @@ class RecipeViewSet(ModelViewSet):
 
 
 class TagViewSet(ModelViewSet):
-    pagination_class = CustomPagination
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
@@ -223,8 +222,9 @@ class TagViewSet(ModelViewSet):
 class IngredientViewSet(ModelViewSet):
     filter_backends = (SearchFilter,
                        OrderingFilter)
-    ordering = ('name',)
-    pagination_class = CustomPagination
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    ordering = ('name',)
     search_fields = ('^name',)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
