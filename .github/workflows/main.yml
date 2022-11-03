@@ -72,8 +72,8 @@ jobs:
         script: |
           cd /home/${{ secrets.USER }}/foodgram-project-react/infra
           sudo docker-compose stop
-          sudo -S docker rm foodgram_frontend_1
-          sudo -S docker rm foodgram_web_1
+          sudo -S docker rm infra_frontend_1
+          sudo -S docker rm infra_web_1
           sudo -S docker rmi ${{ secrets.DOCKER_USER }}/foodgram_frontend
           sudo -S docker rmi ${{ secrets.DOCKER_USER }}/foodgram
           sudo docker pull banderolfromacer/foodgram:latest
