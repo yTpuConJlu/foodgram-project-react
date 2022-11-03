@@ -31,5 +31,5 @@ class FollowAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
-admin.site.register(User)
-admin.site.register(Follow)
+admin.site.register(User, UsersAdmin)
+admin.site.register(Follow, FollowAdmin)
