@@ -60,7 +60,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user', 'recipe')
 
 
-class ShpngCartAdmin(admin.ModelAdmin):
+class ShoppingCartAdmin(admin.ModelAdmin):
     """Настройка админ панели управления корзиной покупок."""
 
     list_display = ('recipe', 'user')
@@ -68,8 +68,8 @@ class ShpngCartAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
-admin.site.register(Recipe)
-admin.site.register(Ingredient)
-admin.site.register(Tag)
-admin.site.register(Favorite)
-admin.site.register(ShoppingCart)
+admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Tag, TagAdmin)
+admin.site.register(Favorite, FavoriteAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
