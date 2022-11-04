@@ -74,8 +74,8 @@ jobs:
           sudo docker-compose stop
           sudo -S docker rm infra_frontend_1
           sudo -S docker rm infra_web_1
-          sudo -S docker rmi ${{ secrets.DOCKER_USER }}/foodgram_frontend
-          sudo -S docker rmi ${{ secrets.DOCKER_USER }}/foodgram
+          sudo -S docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend
+          sudo -S docker rmi ${{ secrets.DOCKER_USERNAME }}/foodgram
           sudo docker pull banderolfromacer/foodgram:latest
           sudo docker-compose up -d
 
