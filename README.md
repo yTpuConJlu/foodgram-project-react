@@ -75,11 +75,6 @@ docker-compose exec -T < CONTAINER ID > python manage.py collectstatic --no-inpu
 
 ytpu-conjlu.servebeer.com 51.250.94.102
 
-доступ к админке:
-
-login: banderolfromacer@yandex.ru
-password: Admin
-
 Автор backend сервисов
 [Илья Щербаков](https://github.com/yTpuConJlu)
 
